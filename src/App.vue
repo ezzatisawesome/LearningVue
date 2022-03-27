@@ -1,81 +1,86 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import { computed } from '@vue/reactivity';
+import { ref } from 'vue';
+
+const message = ref('Hello World')
+const count = ref(0)
+const text = ref('')
+const toggleBool = ref('false')
+
+// function onInput(e) {
+//     text.value = e.target.value
+// }
+
+function toggle() {
+    toggleBool.value = !toggleBool.value
+}
+
+
+let id = 0
+const newTodo = ref('')
+const hideCompletedBool = ref(false)
+const todos = ref([
+    {id: id++, task:'Fold clothes', done: false},
+    {id: id++, task:'Make bed', done: false},
+    {id: id++, task:'Rake leaves', done: false}
+])
+
+const filteredTodos = computed(() => {
+    return hideCompletedBool.value
+    ? todos.value.filter(t => !t.done)
+    : todos.value
+})
+
+function addTodo() {
+    todos.value.push({ id: id++, task: newTodo.value, done: false })
+    newTodo.value = ''
+}
+
+function removeTodo(todo) {
+    todos.value = todos.value.filter(t => t !== todo) // sorts every element that is not todo into a new array
+}
+
+function hideCompleted() {
+    hideCompletedBool.value = !hideCompletedBool.value
+}
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+<div>
+    <p>{{message}}</p>
+    <button v-on:click="count++">{{ count }}</button>
+</div>
+<div>
+    <!-- <input :value="text" @input="onInput" placeholder="Type here">
+    <p>{{ text }}</p> -->
+    <input v-model="text" placeholder="Type Here">
+    <p>{{ text }}</p>
+</div>
+<div>
+    <button @click="toggle()">Toggle</button>
+    <h1 v-if="toggleBool">Vue is cool!</h1>
+    <h1 v-else>Off 😢</h1>
+</div>
+<div>
+    <form @submit.prevent="addTodo()">
+        <input v-model="newTodo" placeholder="New Task">
+        <button>Add Todo</button>
+    </form>
+    <ul>
+        <li v-for="todo in filteredTodos" :key="todo.id">
+            <input type="checkbox" v-model="todo.done">
+            <span :class="{done: todo.done}">{{ todo.task }}</span>
+            <button @click="removeTodo(todo)">X</button>
+        </li>
+    </ul>
+    <button @click="hideCompleted()">
+        {{ hideCompletedBool ? 'Show all' : 'Hide completed'}}
+    </button>
+</div>
 </template>
 
 <style>
-@import './assets/base.css';
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-
-  font-weight: normal;
-}
-
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
-
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-}
+    .done {
+        text-decoration: line-through;
+    }
 </style>
